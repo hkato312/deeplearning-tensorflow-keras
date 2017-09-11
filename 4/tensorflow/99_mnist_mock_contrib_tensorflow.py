@@ -19,6 +19,7 @@ class DNN(object):
 
         self._x = None
         self._t = None,
+        self._y = None,
         self._keep_prob = None
         self._sess = None
         self._history = {
@@ -56,9 +57,9 @@ class DNN(object):
             self.weight_variable([self.n_hiddens[-1], self.n_out]))
         self.biases.append(self.bias_variable([self.n_out]))
 
-        y = tf.nn.softmax(tf.matmul(
+        self._y = tf.nn.softmax(tf.matmul(
             output, self.weights[-1]) + self.biases[-1])
-        return y
+        return self._y
 
     def loss(self, y, t):
         cross_entropy = tf.reduce_mean(-tf.reduce_sum(t * tf.log(y),
@@ -133,7 +134,8 @@ class DNN(object):
         return self._history
 
     def evaluate(self, X_test, Y_test):
-        return self.accuracy.eval(session=self._sess, feed_dict={
+        accuracy = self.accuracy(self._y, self._t)
+        return accuracy.eval(session=self._sess, feed_dict={
             self._x: X_test,
             self._t: Y_test,
             self._keep_prob: 1.0
